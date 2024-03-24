@@ -387,5 +387,6 @@ async def first_command(interaction):
             await msg.delete()
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
+
 client.run(st.secrets["botToken"])
 server.b()
