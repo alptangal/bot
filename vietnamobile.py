@@ -37,13 +37,22 @@ async def register(headers,otp):
     "otp": otp,
     "password": "123123_Qwe"
   }
-  req=requests.post(url,headers=headers,json=data)
-  if req.status_code<400:
+  print(headers)
+  #req=requests.post(url,headers=headers,json=data)
+  async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+    async with session.post(url,headers=headers,json=data) as res:
+      if res.status<400:
+        js=await res.json()
+        if js['code']==None:
+          print(f'{headers["phone"]} register success')
+          headers=headers|js['data']
+          return headers
+  '''if req.status_code<400:
     js=req.json()
     if js['code']==None:
       print(f'{headers["phone"]} register success')
       headers=headers|js['data']
-      return headers
+      return headers'''
   print(f'{headers["phone"]} can\'t register')
   return False
 

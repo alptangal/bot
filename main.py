@@ -64,6 +64,7 @@ async def taskKeepCookie(guild):
       pass
 @tasks.loop(seconds=1)
 async def taskUpdatePhone(guild):
+  #print('taskUpdatePhone is running')
   RESULT=await getBasic(guild)
   async for msg in RESULT['rawsCh'].history():
     isset=False
@@ -83,6 +84,7 @@ async def taskUpdatePhone(guild):
           await thread.thread.send('New otp sent to '+phone)'''
 @tasks.loop(seconds=3)
 async def taskSendOtp(guild):
+  #print('taskSendOtp is running')
   RESULT=await getBasic(guild)
   for thread in RESULT['phonesCh'].threads:
     try:
@@ -104,48 +106,61 @@ async def taskSendOtp(guild):
       pass
 @tasks.loop(seconds=3)
 async def taskLogin(guild):
-  RESULT=await getBasic(guild)
-  for thread in RESULT['phonesCh'].threads:
-    #try:
-    if any(item.strip() in thread.name for item in VIETTELS):
-      msgs=[msg async for msg in thread.history(oldest_first=True)]
-      if len(msgs)==3 and 'loading' in msgs[0].content: 
-        otp=msgs[len(msgs)-1].content
-        rs=await register(thread.name,otp)
-        if rs:
-          for i,msg in enumerate(msgs):
-            if i!=0 and 'headers' not in msgs[0].content:
-              await msg.delete()
-            else: 
-              await msg.edit(content=rs)
-    elif any(item.strip() in thread.name for item in VINAPHONES):
-      msgs=[msg async for msg in thread.history(oldest_first=True)]
-      if (len(msgs)==1 and 'loading' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
-        otp=msgs[len(msgs)-1].content
-        rs=await vnpt.loginByPassword(thread.name)
-        if rs:
-          for i,msg in enumerate(msgs):
-            if i!=0 and 'headers' not in msgs[0].content:
-              await msg.delete()
-            else: 
-              await msg.edit(content=rs)
-    elif any(item.strip() in thread.name for item in VIETNAMOBILE):
-      msgs=[msg async for msg in thread.history(oldest_first=True)]
-      if (len(msgs)==3 and 'transId' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
-        otp=msgs[len(msgs)-1].content
-        headers=ast.literal_eval(msgs[0].content)
-        rs=await vietnamobile.register(headers,otp)
-        if rs:
-          for i,msg in enumerate(msgs):
-            if i!=0 and 'headers' not in msgs[0].content:
-              await msg.delete()
-            else: 
-              await msg.edit(content=rs)
+  #print('taskLogin is running')
+  for category in guild.categories:
+    if 'viettel' in category.name:
+      for channel in category.channels:
+        if 'phone' in channel.name:
+          for thread in channel.threads:
+            if any(item.strip() in thread.name for item in VIETTELS):
+              msgs=[msg async for msg in thread.history(oldest_first=True)]
+              if len(msgs)==3 and 'loading' in msgs[0].content: 
+                otp=msgs[len(msgs)-1].content
+                rs=await register(thread.name,otp)
+                if rs:
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and 'headers' not in msgs[0].content:
+                      await msg.delete()
+                    else: 
+                      await msg.edit(content=rs)
+            elif any(item.strip() in thread.name for item in VINAPHONES):
+              msgs=[msg async for msg in thread.history(oldest_first=True)]
+              if (len(msgs)==1 and 'loading' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
+                otp=msgs[len(msgs)-1].content
+                rs=await vnpt.loginByPassword(thread.name)
+                if rs:
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and 'headers' not in msgs[0].content:
+                      await msg.delete()
+                    else: 
+                      await msg.edit(content=rs)
+            elif any(item.strip() in thread.name for item in VIETNAMOBILE):
+              msgs=[msg async for msg in thread.history(oldest_first=True)]
+              if (len(msgs)==3 and 'token' not in msgs[0].content):
+                otp=msgs[len(msgs)-1].content
+                headers=ast.literal_eval(msgs[0].content)
+                rs=await vietnamobile.register(headers,otp)
+                if rs:
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and 'headers' not in msgs[0].content:
+                      await msg.delete()
+                    else: 
+                      await msg.edit(content=rs)
+              elif ('token' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
+                headers=ast.literal_eval(msgs[0].content)
+                rs=await vietnamobile.login(headers)
+                if rs:
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and 'headers' not in msgs[0].content:
+                      await msg.delete()
+                    else: 
+                      await msg.edit(content=rs)
     '''except Exception as err:
       print(err)
       pass'''
 @tasks.loop(seconds=1)  
 async def taskGetInfo(guild):
+  #print('taskGetInfo is running')
   RESULT=await getBasic(guild)
   for thread in RESULT['phonesCh'].threads:
       try:
