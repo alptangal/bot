@@ -32,7 +32,7 @@ THREADS = []
 USERNAMES = [] 
 GUILDID = 1122707918177960047 
 RESULT=None
-server.b()
+#server.b()
 @client.event
 async def on_ready():
     #rs=await vietnamobile.login({'phone': '0927847108', 'transId': None, 'user-agent': 'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0', 'x-device-id': 'BA7ABF14-BCC4-47EF-964F-DEF1B9E68541', 'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMDkyNzQ0OTQxNTM3MDk5Nzc2Iiwicm9sZXMiOltdLCJleHAiOjE3MTExMDg5NjUsImlhdCI6MTcxMTEwMDMyNX0.rNA6wQcSK7RLDIMuJB5xlc0JyCh7TeQ14SeaCXRZg-0LNN89-JY0EK40aptX8qmBWV5RLqbfWL1PanHA1R3Jgg', 'requiredOTP': False, 'refreshToken': '41036610-1df7-4d3b-a1cc-3db9271d31ce'})
