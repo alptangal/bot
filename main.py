@@ -14,7 +14,6 @@ import vinaphone as vnpt
 import vietnamobile
 import aiohttp
 import ast
-import streamlit as st
 import ssl
 import certifi
 
@@ -384,4 +383,4 @@ async def first_command(interaction):
             await msg.delete()
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
-client.run(st.secrets["botToken"])
+client.run(process.env.botToken)
