@@ -7,8 +7,10 @@ import random,json
 from urllib.parse import unquote
 import aiohttp
 import urllib3,re
+'''
 requests.packages.urllib3.disable_warnings()
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
+'''
 async def sendOtp(phone):
   url='https://my.vnpt.com.vn/mapi/services/otp_send'
   headers={
