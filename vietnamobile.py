@@ -9,10 +9,6 @@ import aiohttp
 import urllib3,re
 import json
 
-'''
-requests.packages.urllib3.disable_warnings()
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
-'''
 
 async def sendOtp(phone):
   headers={

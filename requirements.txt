@@ -2,7 +2,7 @@ websockets
 requests
 bs4
 discord
-aiohttp
+aiohttp==3.9.4rc0 
 msgpack
 flask
-urllib3<2
+urllib3

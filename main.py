@@ -15,8 +15,8 @@ import vietnamobile
 import aiohttp
 import ast
 import streamlit as st
-
-
+import ssl
+import certifi
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
@@ -32,7 +32,7 @@ THREADS = []
 USERNAMES = [] 
 GUILDID = 1122707918177960047 
 RESULT=None
-
+server.b()
 @client.event
 async def on_ready():
     #rs=await vietnamobile.login({'phone': '0927847108', 'transId': None, 'user-agent': 'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0', 'x-device-id': 'BA7ABF14-BCC4-47EF-964F-DEF1B9E68541', 'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMDkyNzQ0OTQxNTM3MDk5Nzc2Iiwicm9sZXMiOltdLCJleHAiOjE3MTExMDg5NjUsImlhdCI6MTcxMTEwMDMyNX0.rNA6wQcSK7RLDIMuJB5xlc0JyCh7TeQ14SeaCXRZg-0LNN89-JY0EK40aptX8qmBWV5RLqbfWL1PanHA1R3Jgg', 'requiredOTP': False, 'refreshToken': '41036610-1df7-4d3b-a1cc-3db9271d31ce'})
@@ -148,7 +148,6 @@ async def taskLogin(guild):
 async def taskGetInfo(guild):
   RESULT=await getBasic(guild)
   for thread in RESULT['phonesCh'].threads:
-      print(thread.name)
       #try:
       if any(item.strip() in thread.name for item in VIETTELS):
         msgs=[msg async for msg in thread.history(oldest_first=True)]
@@ -156,7 +155,8 @@ async def taskGetInfo(guild):
           try:
             headers=await loginByChecksum(json.loads(msgs[0].content.replace("'",'"')))
             rs=await getInfo(headers)
-          except:
+          except Exception as err:
+            print(err)
             rs=False
           if rs: 
             js=rs['data']
@@ -211,7 +211,6 @@ async def taskGetInfo(guild):
         msgs=[msg async for msg in thread.history(oldest_first=True)]
         if len(msgs)==1 and 'loading' not in msgs[0].content or 'session' in msgs[0].content:
           #try:
-          print(111222)
           rs=await vnpt.getInfo(json.loads(msgs[0].content.replace("'",'"')))
           if rs:
             js=rs['data']
@@ -232,7 +231,6 @@ async def taskGetInfo(guild):
             embed.add_field(name="Rank", value=js['rank'],inline=True)
             embed.add_field(name="Point", value=js['point'],inline=True)
             embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VINAPHONE')
-            print(222333)
             if len(msgs)==1:
               await thread.send(embed=embed) 
             else:
@@ -250,7 +248,6 @@ async def taskGetInfo(guild):
                 if i!=0 and i!=1:
                   await msg.delete()
               await thread.send(owner.mention)
-        print(123123)
       elif any(item.strip() in thread.name for item in VIETNAMOBILE):
         msgs=[msg async for msg in thread.history(oldest_first=True)]
         if len(msgs)==1 and 'loading' not in msgs[0].content or 'token' in msgs[0].content:
@@ -389,4 +386,3 @@ async def first_command(interaction):
         await interaction.edit_original_response(content='Need update!')
 
 client.run(st.secrets["botToken"])
-server.b()
