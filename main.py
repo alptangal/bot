@@ -435,4 +435,4 @@ async def first_command(interaction):
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
 client.run(st.secrets["botToken"])
-#hello
+#hello1
