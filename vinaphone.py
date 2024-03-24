@@ -26,7 +26,7 @@ async def sendOtp(phone):
   data={"msisdn":phone,"otp_service":"authen_msisdn","session":""}
   async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
     async with session.post(url,headers=headers,json=data,ssl_context=ssl_context) as res:
-      if req.status<400:
+      if res.status<400:
         print('New OTP sent to '+phone)
         return True
   print('Can\'t send new OTP to '+phone)

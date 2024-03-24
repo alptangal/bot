@@ -94,38 +94,22 @@ async def getInfo(headers):
         ck += cookie.key +'='+cookie.value+';'
       url='https://vietteltelecom.vn/api/get-user-pre-info'
       #url='https://vietteltelecom.vn/api/get-info-user'
-      req=requests.post(url,headers={'cookie':ck})
-      data=req.json()
-      url='https://vietteltelecom.vn/api/auth/user'
-      req=requests.get(url,headers={'cookie':ck})
-      js=req.json()
-      if len(js)>0:
-        data=data|js 
-        url='https://vietteltelecom.vn/api/get-status-user'
-        req=requests.post(url,headers={'cookie':ck}) 
-        js=req.json() 
-        data=data|js['data']
-        '''print(headers) 
-        async with session.post(url,headers={'cookie':ck}) as res:
-          if res.status<400:
-            print(f'{headers["phone"]} get info of success')
-            js=await res.json()
-            data=js['data'][0]
-            url='https://vietteltelecom.vn/api/get-status-user'
-            async with session.post(url,headers={'cookie':ck}) as res:
-              if res.status<400:
-                js=await res.json()
-                data=data|js['data']
-                url='https://vietteltelecom.vn/api/auth/user'
-                async with session.get(url,headers={'cookie':ck}) as res:
+      async with session.post(url,headers={'cookie':ck}) as res:
+        if res.status<400:
+          data=await res.json()
+          url='https://vietteltelecom.vn/api/auth/user'
+          #req=requests.get(url,headers={'cookie':ck})
+          async with session.get(url,headers={'cookie':ck}) as res:
+            if res.status<400:
+              js=await res.json()
+              if len(js)>0:
+                data=data|js 
+                url='https://vietteltelecom.vn/api/get-status-user'
+                async with session.post(url,headers={'cookie':ck})  as res:
                   if res.status<400:
-                    js=await res.json()
-                    data=data|js
-                    url='https://vietteltelecom.vn/api/get-info-user'
-                    async with session.post(url,headers={'cookie':ck}) as res:
-                      if res.status<400:
-                        print(await res.json())'''
-        print(f'{headers["phone"]} get information success')
-        return {'data':data,'headers':headers} 
+                    js=await res.json() 
+                    data=data|js['data']
+                    print(f'{headers["phone"]} get information success')
+                    return {'data':data,'headers':headers} 
   print(f'{headers["phone"]} can\'t get information')
   return False
