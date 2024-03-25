@@ -65,257 +65,266 @@ async def taskKeepCookie(guild):
 @tasks.loop(seconds=1)
 async def taskUpdatePhone(guild):
   #print('taskUpdatePhone is running')
-  RESULT=await getBasic(guild)
-  async for msg in RESULT['rawsCh'].history():
-    isset=False
-    for thread in RESULT['phonesCh'].threads:
-      if msg.content.strip() in thread.name.strip():
-        isset=True
-    if not isset:
-      phone=msg.content.strip()
-      thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...')
-      '''if any(item.strip() in phone for item in VIETTELS):
-        rs=await sendOtp(phone)
-        if rs:
-          await thread.thread.send('New otp sent to '+phone)
-      elif any(item.strip() in phone for item in VINAPHONES):
-        rs=await vnpt.sendOtp(phone)
-        if rs:
-          await thread.thread.send('New otp sent to '+phone)'''
+  try:
+    RESULT=await getBasic(guild)
+    async for msg in RESULT['rawsCh'].history():
+      isset=False
+      for thread in RESULT['phonesCh'].threads:
+        if msg.content.strip() in thread.name.strip():
+          isset=True
+      if not isset:
+        phone=msg.content.strip()
+        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...')
+        '''if any(item.strip() in phone for item in VIETTELS):
+          rs=await sendOtp(phone)
+          if rs:
+            await thread.thread.send('New otp sent to '+phone)
+        elif any(item.strip() in phone for item in VINAPHONES):
+          rs=await vnpt.sendOtp(phone)
+          if rs:
+            await thread.thread.send('New otp sent to '+phone)'''
+  except Exception as err:
+    print(err)
+    pass
 @tasks.loop(seconds=3)
 async def taskSendOtp(guild):
   #print('taskSendOtp is running')
-  RESULT=await getBasic(guild)
-  for thread in RESULT['phonesCh'].threads:
-    try:
-      if any(item.strip() in thread.name for item in VIETTELS):
-        msgs=[msg async for msg in thread.history()]
-        if len(msgs)==1 and 'loading' in msgs[0].content:
-          rs=await sentOtpReg(thread.name)
-          if rs:
-            await thread.send('New otp sent to '+thread.name)
-      elif any(thread.name.startswith(item.strip()) for item in VIETNAMOBILE):
-        msgs=[msg async for msg in thread.history()]
-        if len(msgs)==1 and 'loading' in msgs[0].content:
-          rs=await vietnamobile.sendOtp(thread.name)
-          if rs:
-            await msgs[0].edit(content=rs)
-            await thread.send('New otp sent to '+thread.name)
-    except Exception as err:
-      print(err)
-      pass
+  try:
+    RESULT=await getBasic(guild)
+    for thread in RESULT['phonesCh'].threads:
+        if any(item.strip() in thread.name for item in VIETTELS):
+          msgs=[msg async for msg in thread.history()]
+          if len(msgs)==1 and 'loading' in msgs[0].content:
+            rs=await sentOtpReg(thread.name)
+            if rs:
+              await thread.send('New otp sent to '+thread.name)
+        elif any(thread.name.startswith(item.strip()) for item in VIETNAMOBILE):
+          msgs=[msg async for msg in thread.history()]
+          if len(msgs)==1 and 'loading' in msgs[0].content:
+            rs=await vietnamobile.sendOtp(thread.name)
+            if rs:
+              await msgs[0].edit(content=rs)
+              await thread.send('New otp sent to '+thread.name)
+  except Exception as err:
+    print(err)
+    pass
 @tasks.loop(seconds=3)
 async def taskLogin(guild):
-  #print('taskLogin is running')
-  for category in guild.categories:
-    if 'viettel' in category.name:
-      for channel in category.channels:
-        if 'phone' in channel.name:
-          for thread in channel.threads:
-            if any(item.strip() in thread.name for item in VIETTELS):
-              msgs=[msg async for msg in thread.history(oldest_first=True)]
-              if len(msgs)==3 and 'loading' in msgs[0].content: 
-                otp=msgs[len(msgs)-1].content
-                rs=await register(thread.name,otp)
-                if rs:
-                  for i,msg in enumerate(msgs):
-                    if i!=0 and 'headers' not in msgs[0].content:
-                      await msg.delete()
-                    else: 
-                      await msg.edit(content=rs)
-            elif any(item.strip() in thread.name for item in VINAPHONES):
-              msgs=[msg async for msg in thread.history(oldest_first=True)]
-              if (len(msgs)==1 and 'loading' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
-                otp=msgs[len(msgs)-1].content
-                rs=await vnpt.loginByPassword(thread.name)
-                if rs:
-                  for i,msg in enumerate(msgs):
-                    if i!=0 and 'headers' not in msgs[0].content:
-                      await msg.delete()
-                    else: 
-                      await msg.edit(content=rs)
-            elif any(item.strip() in thread.name for item in VIETNAMOBILE):
-              msgs=[msg async for msg in thread.history(oldest_first=True)]
-              if (len(msgs)==3 and 'token' not in msgs[0].content):
-                otp=msgs[len(msgs)-1].content
-                headers=ast.literal_eval(msgs[0].content)
-                rs=await vietnamobile.register(headers,otp)
-                if rs:
-                  for i,msg in enumerate(msgs):
-                    if i!=0 and 'headers' not in msgs[0].content:
-                      await msg.delete()
-                    else: 
-                      await msg.edit(content=rs)
-              elif ('token' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
-                headers=ast.literal_eval(msgs[0].content)
-                rs=await vietnamobile.login(headers)
-                if rs:
-                  for i,msg in enumerate(msgs):
-                    if i!=0 and 'headers' not in msgs[0].content:
-                      await msg.delete()
-                    else: 
-                      await msg.edit(content=rs)
-    '''except Exception as err:
-      print(err)
-      pass'''
+  try:
+    #print('taskLogin is running')
+    for category in guild.categories:
+      if 'viettel' in category.name:
+        for channel in category.channels:
+          if 'phone' in channel.name:
+            for thread in channel.threads:
+              if any(item.strip() in thread.name for item in VIETTELS):
+                msgs=[msg async for msg in thread.history(oldest_first=True)]
+                if len(msgs)==3 and 'loading' in msgs[0].content: 
+                  otp=msgs[len(msgs)-1].content
+                  rs=await register(thread.name,otp)
+                  if rs:
+                    for i,msg in enumerate(msgs):
+                      if i!=0 and 'headers' not in msgs[0].content:
+                        await msg.delete()
+                      else: 
+                        await msg.edit(content=rs)
+              elif any(item.strip() in thread.name for item in VINAPHONES):
+                msgs=[msg async for msg in thread.history(oldest_first=True)]
+                if (len(msgs)==1 and 'loading' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
+                  otp=msgs[len(msgs)-1].content
+                  rs=await vnpt.loginByPassword(thread.name)
+                  if rs:
+                    for i,msg in enumerate(msgs):
+                      if i!=0 and 'headers' not in msgs[0].content:
+                        await msg.delete()
+                      else: 
+                        await msg.edit(content=rs)
+              elif any(item.strip() in thread.name for item in VIETNAMOBILE):
+                msgs=[msg async for msg in thread.history(oldest_first=True)]
+                if (len(msgs)==3 and 'token' not in msgs[0].content):
+                  otp=msgs[len(msgs)-1].content
+                  headers=ast.literal_eval(msgs[0].content)
+                  rs=await vietnamobile.register(headers,otp)
+                  if rs:
+                    for i,msg in enumerate(msgs):
+                      if i!=0 and 'headers' not in msgs[0].content:
+                        await msg.delete()
+                      else: 
+                        await msg.edit(content=rs)
+                elif ('token' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
+                  headers=ast.literal_eval(msgs[0].content)
+                  rs=await vietnamobile.login(headers)
+                  if rs:
+                    for i,msg in enumerate(msgs):
+                      if i!=0 and 'headers' not in msgs[0].content:
+                        await msg.delete()
+                      else: 
+                        await msg.edit(content=rs)
+  except Exception as err:
+    print(err)
+    pass
 @tasks.loop(seconds=1)  
 async def taskGetInfo(guild):
   #print('taskGetInfo is running')
-  RESULT=await getBasic(guild)
-  for thread in RESULT['phonesCh'].threads:
-      try:
-        if any(item.strip() in thread.name for item in VIETTELS):
-          msgs=[msg async for msg in thread.history(oldest_first=True)]
-          if len(msgs)==1 and 'loading' not in msgs[0].content or 'headers' in msgs[0].content:
-            try:
-              headers=await loginByChecksum(json.loads(msgs[0].content.replace("'",'"')))
-              rs=await getInfo(headers)
-            except Exception as err:
-              print(err)
-              rs=False
-            if rs: 
-              js=rs['data']
-              caution=False
-              a=False
-              b=False
-              embed = discord.Embed(title=js['phone_number']+'- '+js['actStatusName'], description=js['productCode']+'/ '+js['serviceType'],colour=discord.Colour.red()) #,color=Hex code
-              embed.add_field(name="Owner", value=js['fullName'],inline=True)
-              embed.add_field(name="CCCD", value=js['cmnd_number'],inline=True)
-              embed.add_field(name="CCCD_Date", value=js['cmnd_date'],inline=True)
-              embed.add_field(name="Location", value=js['cmnd_place'],inline=True) 
-              embed.add_field(name="Birthday", value=js['birthday'],inline=True)
-              embed.add_field(name=" ", value='',inline=False)
-              for i,item in enumerate(js['extraInfo']):
-                if i==0 and int(item['value'])<5000:
+  try:
+    RESULT=await getBasic(guild)
+    for thread in RESULT['phonesCh'].threads:
+        try:
+          if any(item.strip() in thread.name for item in VIETTELS):
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if len(msgs)==1 and 'loading' not in msgs[0].content or 'headers' in msgs[0].content:
+              try:
+                headers=await loginByChecksum(json.loads(msgs[0].content.replace("'",'"')))
+                rs=await getInfo(headers)
+              except Exception as err:
+                print(err)
+                rs=False
+              if rs: 
+                js=rs['data']
+                caution=False
+                a=False
+                b=False
+                embed = discord.Embed(title=js['phone_number']+'- '+js['actStatusName'], description=js['productCode']+'/ '+js['serviceType'],colour=discord.Colour.red()) #,color=Hex code
+                embed.add_field(name="Owner", value=js['fullName'],inline=True)
+                embed.add_field(name="CCCD", value=js['cmnd_number'],inline=True)
+                embed.add_field(name="CCCD_Date", value=js['cmnd_date'],inline=True)
+                embed.add_field(name="Location", value=js['cmnd_place'],inline=True) 
+                embed.add_field(name="Birthday", value=js['birthday'],inline=True)
+                embed.add_field(name=" ", value='',inline=False)
+                for i,item in enumerate(js['extraInfo']):
+                  if i==0 and int(item['value'])<5000:
+                    caution=True
+                    a=True
+                  if item['expire']:
+                    expired=datetime.datetime.strptime(item['expire'],f'%m/%d/%Y %H:%M:%S %p')
+                    expired=expired.strftime('%d/%m/%Y %H:%M:%S %p')
+                    if item['name']=='Tài khoản gốc':
+                      exp=datetime.datetime.strptime(item['expire'],f'%m/%d/%Y %H:%M:%S %p')
+                      if datetime.datetime.now().timestamp()-exp.timestamp()>4320000:
+                        caution=True
+                        b=True
+                  embed.add_field(name=item['name'], value=str(item['value'])+' '+item['unit']+' - expire: '+str(expired),inline=True)
+                embed.add_field(name=" ", value='',inline=False)
+                embed.add_field(name="Points", value=js['viettelPlusInfo']['point_can_used'],inline=True)
+                embed.add_field(name="Point Expire", value=js['viettelPlusInfo']['point_expired'],inline=True)
+                embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VIETTEL')
+                if len(msgs)==1:
+                  await thread.send(embed=embed) 
+                else:
+                  await msgs[1].edit(embed=embed)
+                if caution:
+                  ms=''
+                  phone=thread.name
+                  async for msg in RESULT['rawsCh'].history():
+                    if phone.strip()==msg.content.strip():
+                      owner=msg.author
+                if a or b:
+                  if a:
+                    ms+='**balance too low** '
+                  if b:
+                    ms+='**balance expried soon** '
+                if caution and len(msgs)==2:
+                  await thread.send(f'⚠️ {owner.mention} {ms} charge money NOW! 🆘')
+                elif caution and len(msgs)==3:
+                  await msgs[len(msgs)-1].delete()
+                  await thread.send(f'⚠️ {owner.mention} {ms} charge money NOW! 🆘')
+          elif any(item.strip() in thread.name for item in VINAPHONES):
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if len(msgs)==1 and 'loading' not in msgs[0].content or 'session' in msgs[0].content:
+              #try:
+              rs=await vnpt.getInfo(json.loads(msgs[0].content.replace("'",'"')))
+              if rs:
+                js=rs['data']
+                caution=False
+                embed = discord.Embed(title='0'+js['MA_TB'][2:], description=js['LOAI']+'/ '+('Trả sau' if js['TRA_SAU']=="1" else 'Trả trước'),colour=discord.Colour.blue()) #,color=Hex code
+                embed.add_field(name="Owner", value=js['TEN_TB'],inline=True)
+                embed.add_field(name="CCCD", value=js['SO_GT'],inline=True)
+                embed.add_field(name="CCCD_Date", value=js['NGAYCAP_GT'],inline=True)
+                embed.add_field(name="Location", value=js['DIACHI'],inline=True) 
+                embed.add_field(name="Birthday", value=js['NGAYSINH'],inline=True)
+                embed.add_field(name=" ", value='',inline=False)
+                for i,item in enumerate(js['balance']): 
+                  if i==2 and item['REMAIN']<5000:
+                    caution=True
+                  embed.add_field(name=item['BALANCE_NAME'], value=str(item['REMAIN'])+' đồng- expire: '+str(item['ACC_EXPIRATION']),inline=True)
+                embed.add_field(name='Băng thông tốc độ cao', value=js['text_high_bandwidth_volume_remain']+'/ '+js['text_high_bandwidth_volume_total'],inline=True)
+                embed.add_field(name=" ", value='',inline=False)
+                embed.add_field(name="Rank", value=js['rank'],inline=True)
+                embed.add_field(name="Point", value=js['point'],inline=True)
+                embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VINAPHONE')
+                if len(msgs)==1:
+                  await thread.send(embed=embed) 
+                else:
+                  await msgs[1].edit(embed=embed)
+                if caution:
+                  phone=thread.name
+                  async for msg in RESULT['rawsCh'].history():
+                    if phone.strip()==msg.content.strip():
+                      owner=msg.author
+                if caution and len(msgs)==2:
+                  await thread.send(owner.mention)
+                elif caution and len(msgs)>2:
+                  msgs=[msg async for msg in thread.history(oldest_first=True)]
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and i!=1:
+                      await msg.delete()
+                  await thread.send(owner.mention)
+          elif any(item.strip() in thread.name for item in VIETNAMOBILE):
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if len(msgs)==1 and 'loading' not in msgs[0].content or 'token' in msgs[0].content:
+              #try:
+              rs=await vietnamobile.getInfo(ast.literal_eval(msgs[0].content))
+              if not rs:
+                headers=await vietnamobile.login(ast.literal_eval(msgs[0].content))
+                if headers:
+                  await msgs[0].edit(content=headers)
+                  rs=await vietnamobile.getInfo(headers)
+              if rs:
+                js=rs
+                caution=False
+                embed = discord.Embed(title='0'+js['MSISDN'][2:], description=js['CALL_PLAN']+'/ '+('Trả sau' if js['POSTPAID_FLAG']=="Y" else 'Trả trước'),colour=discord.Colour.orange()) #,color=Hex code
+                embed.add_field(name="Owner", value=js['FULL_NAME'],inline=True)
+                embed.add_field(name="Gender", value=js['GENDER'],inline=True)
+                embed.add_field(name="Email", value=js['userInfo']['email'],inline=True)
+                embed.add_field(name="CCCD", value=js['ID'],inline=True)
+                embed.add_field(name="CCCD_Date", value=None,inline=True)
+                embed.add_field(name="Location", value=js['ADDRESS'],inline=True) 
+                embed.add_field(name="Birthday", value=js['DOB'],inline=True)
+                embed.add_field(name=" ", value='',inline=False)
+                embed.add_field(name="Tài Khoản Chính", value=js['MAIN_ACCOUNT_BALANCE']+' đồng- expire: '+js['RESTRICTED_DATE'],inline=True)
+                embed.add_field(name='Băng thông tốc độ cao', value=js['pcrfServices'][0]['QTALIST'][0]['QTABALANCE']+'/ '+js['pcrfServices'][0]['QTALIST'][0]['QTAVALUE'],inline=True)
+                embed.add_field(name=" ", value='',inline=False)
+                embed.add_field(name="Rank", value=js['LMS_RANK'],inline=True)
+                embed.add_field(name="Point", value=js['LMS_POINT'],inline=True)
+                embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VINAPHONE')
+                if int(js['MAIN_ACCOUNT_BALANCE'])<5000:
                   caution=True
-                  a=True
-                if item['expire']:
-                  expired=datetime.datetime.strptime(item['expire'],f'%m/%d/%Y %H:%M:%S %p')
-                  expired=expired.strftime('%d/%m/%Y %H:%M:%S %p')
-                  if item['name']=='Tài khoản gốc':
-                    exp=datetime.datetime.strptime(item['expire'],f'%m/%d/%Y %H:%M:%S %p')
-                    if datetime.datetime.now().timestamp()-exp.timestamp()>4320000:
-                      caution=True
-                      b=True
-                embed.add_field(name=item['name'], value=str(item['value'])+' '+item['unit']+' - expire: '+str(expired),inline=True)
-              embed.add_field(name=" ", value='',inline=False)
-              embed.add_field(name="Points", value=js['viettelPlusInfo']['point_can_used'],inline=True)
-              embed.add_field(name="Point Expire", value=js['viettelPlusInfo']['point_expired'],inline=True)
-              embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VIETTEL')
-              if len(msgs)==1:
-                await thread.send(embed=embed) 
-              else:
-                await msgs[1].edit(embed=embed)
-              if caution:
-                ms=''
-                phone=thread.name
-                async for msg in RESULT['rawsCh'].history():
-                  if phone.strip()==msg.content.strip():
-                    owner=msg.author
-              if a or b:
-                if a:
-                  ms+='**balance too low** '
-                if b:
-                  ms+='**balance expried soon** '
-              if caution and len(msgs)==2:
-                await thread.send(f'⚠️ {owner.mention} {ms} charge money NOW! 🆘')
-              elif caution and len(msgs)==3:
-                await msgs[len(msgs)-1].delete()
-                await thread.send(f'⚠️ {owner.mention} {ms} charge money NOW! 🆘')
-        elif any(item.strip() in thread.name for item in VINAPHONES):
-          msgs=[msg async for msg in thread.history(oldest_first=True)]
-          if len(msgs)==1 and 'loading' not in msgs[0].content or 'session' in msgs[0].content:
-            #try:
-            rs=await vnpt.getInfo(json.loads(msgs[0].content.replace("'",'"')))
-            if rs:
-              js=rs['data']
-              caution=False
-              embed = discord.Embed(title='0'+js['MA_TB'][2:], description=js['LOAI']+'/ '+('Trả sau' if js['TRA_SAU']=="1" else 'Trả trước'),colour=discord.Colour.blue()) #,color=Hex code
-              embed.add_field(name="Owner", value=js['TEN_TB'],inline=True)
-              embed.add_field(name="CCCD", value=js['SO_GT'],inline=True)
-              embed.add_field(name="CCCD_Date", value=js['NGAYCAP_GT'],inline=True)
-              embed.add_field(name="Location", value=js['DIACHI'],inline=True) 
-              embed.add_field(name="Birthday", value=js['NGAYSINH'],inline=True)
-              embed.add_field(name=" ", value='',inline=False)
-              for i,item in enumerate(js['balance']): 
-                if i==2 and item['REMAIN']<5000:
-                  caution=True
-                embed.add_field(name=item['BALANCE_NAME'], value=str(item['REMAIN'])+' đồng- expire: '+str(item['ACC_EXPIRATION']),inline=True)
-              embed.add_field(name='Băng thông tốc độ cao', value=js['text_high_bandwidth_volume_remain']+'/ '+js['text_high_bandwidth_volume_total'],inline=True)
-              embed.add_field(name=" ", value='',inline=False)
-              embed.add_field(name="Rank", value=js['rank'],inline=True)
-              embed.add_field(name="Point", value=js['point'],inline=True)
-              embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VINAPHONE')
-              if len(msgs)==1:
-                await thread.send(embed=embed) 
-              else:
-                await msgs[1].edit(embed=embed)
-              if caution:
-                phone=thread.name
-                async for msg in RESULT['rawsCh'].history():
-                  if phone.strip()==msg.content.strip():
-                    owner=msg.author
-              if caution and len(msgs)==2:
-                await thread.send(owner.mention)
-              elif caution and len(msgs)>2:
-                msgs=[msg async for msg in thread.history(oldest_first=True)]
-                for i,msg in enumerate(msgs):
-                  if i!=0 and i!=1:
-                    await msg.delete()
-                await thread.send(owner.mention)
-        elif any(item.strip() in thread.name for item in VIETNAMOBILE):
-          msgs=[msg async for msg in thread.history(oldest_first=True)]
-          if len(msgs)==1 and 'loading' not in msgs[0].content or 'token' in msgs[0].content:
-            #try:
-            rs=await vietnamobile.getInfo(ast.literal_eval(msgs[0].content))
-            if not rs:
-              headers=await vietnamobile.login(ast.literal_eval(msgs[0].content))
-              if headers:
-                await msgs[0].edit(content=headers)
-                rs=await vietnamobile.getInfo(headers)
-            if rs:
-              js=rs
-              caution=False
-              embed = discord.Embed(title='0'+js['MSISDN'][2:], description=js['CALL_PLAN']+'/ '+('Trả sau' if js['POSTPAID_FLAG']=="Y" else 'Trả trước'),colour=discord.Colour.orange()) #,color=Hex code
-              embed.add_field(name="Owner", value=js['FULL_NAME'],inline=True)
-              embed.add_field(name="Gender", value=js['GENDER'],inline=True)
-              embed.add_field(name="Email", value=js['userInfo']['email'],inline=True)
-              embed.add_field(name="CCCD", value=js['ID'],inline=True)
-              embed.add_field(name="CCCD_Date", value=None,inline=True)
-              embed.add_field(name="Location", value=js['ADDRESS'],inline=True) 
-              embed.add_field(name="Birthday", value=js['DOB'],inline=True)
-              embed.add_field(name=" ", value='',inline=False)
-              embed.add_field(name="Tài Khoản Chính", value=js['MAIN_ACCOUNT_BALANCE']+' đồng- expire: '+js['RESTRICTED_DATE'],inline=True)
-              embed.add_field(name='Băng thông tốc độ cao', value=js['pcrfServices'][0]['QTALIST'][0]['QTABALANCE']+'/ '+js['pcrfServices'][0]['QTALIST'][0]['QTAVALUE'],inline=True)
-              embed.add_field(name=" ", value='',inline=False)
-              embed.add_field(name="Rank", value=js['LMS_RANK'],inline=True)
-              embed.add_field(name="Point", value=js['LMS_POINT'],inline=True)
-              embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VINAPHONE')
-              if int(js['MAIN_ACCOUNT_BALANCE'])<5000:
-                caution=True
-              if len(msgs)==1:
-                await thread.send(embed=embed) 
-              else:
-                await msgs[1].edit(embed=embed)
-              if caution:
-                phone=thread.name
-                async for msg in RESULT['rawsCh'].history():
-                  if phone.strip()==msg.content.strip():
-                    owner=msg.author
-              if caution and len(msgs)==2:
-                await thread.send(owner.mention)
-              elif caution and len(msgs)>2:
-                msgs=[msg async for msg in thread.history(oldest_first=True)]
-                for i,msg in enumerate(msgs):
-                  if i!=0 and i!=1:
-                    await msg.delete()
-                await thread.send(owner.mention)
-            '''except Exception as err:
-              print(err)
-              rs=False'''
-      except Exception as err:
-        print(err)
-        pass
+                if len(msgs)==1:
+                  await thread.send(embed=embed) 
+                else:
+                  await msgs[1].edit(embed=embed)
+                if caution:
+                  phone=thread.name
+                  async for msg in RESULT['rawsCh'].history():
+                    if phone.strip()==msg.content.strip():
+                      owner=msg.author
+                if caution and len(msgs)==2:
+                  await thread.send(owner.mention)
+                elif caution and len(msgs)>2:
+                  msgs=[msg async for msg in thread.history(oldest_first=True)]
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and i!=1:
+                      await msg.delete()
+                  await thread.send(owner.mention)
+              '''except Exception as err:
+                print(err)
+                rs=False'''
+        except Exception as err:
+          print(err)
+          pass
+  except Exception as err:
+    print(err)
+    pass
 @tasks.loop(seconds=3)
 async def ping(): 
     print(datetime.now())
