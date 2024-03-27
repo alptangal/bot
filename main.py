@@ -402,4 +402,4 @@ async def first_command(interaction):
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
 server.b()
-client.run(st.secrets["botToken"])
+client.run(os.environ.get('botToken'))
