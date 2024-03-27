@@ -1,0 +1,6 @@
+services:
+- type: web
+  name: bot
+  runtime: python
+  repo: https://github.com/alptangal/bot
+  branch: render
