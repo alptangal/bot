@@ -17,6 +17,8 @@ import ast
 import streamlit as st
 import ssl
 import certifi
+import websockets
+from websockets.server import serve
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
@@ -33,6 +35,9 @@ USERNAMES = []
 GUILDID = 1122707918177960047 
 RESULT=None
 #server.b()
+async def echo(websocket):
+  async for message in websocket:
+    await websocket.send(message)
 @client.event
 async def on_ready():
     global RESULT
@@ -396,4 +401,5 @@ async def first_command(interaction):
             await msg.delete()
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
+server.b()
 client.run(st.secrets["botToken"])
